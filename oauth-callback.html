@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ArcGIS Print Demo (OAuth Enabled)</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.34/esri/themes/dark/main.css" />
+
+    <!-- ArcGIS Web Components -->
+    <script type="module" src="https://js.arcgis.com/calcite-components/3.3.3/calcite.esm.js"></script>
+    <script src="https://js.arcgis.com/4.34/"></script>
+    <script type="module" src="https://js.arcgis.com/4.34/map-components/"></script>
+
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      arcgis-map {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <arcgis-map item-id="dbb34e023cd94d3da5734c8102b5a1c4">
+      <arcgis-print
+        slot="bottom-right"
+        allowed-formats="all"
+        allowed-layouts="all"
+      ></arcgis-print>
+    </arcgis-map>
+
+    <!-- Authentication Setup -->
+    <script type="module">
+      import OAuthInfo from "https://js.arcgis.com/4.34/@arcgis/core/identity/OAuthInfo.js";
+      import IdentityManager from "https://js.arcgis.com/4.34/@arcgis/core/identity/IdentityManager.js";
+      import esriConfig from "https://js.arcgis.com/4.34/@arcgis/core/config.js";
+
+      // Set your Enterprise Portal URL
+      esriConfig.portalUrl = "https://staffmaps.cityoftacoma.org/portal";
+
+      // Configure OAuth
+      const info = new OAuthInfo({
+        appId: "885YlBvaWOdQyc4o", // <-- client ID here
+        portalUrl: esriConfig.portalUrl,
+        popup: true, // popup avoids full-page redirect
+      });
+
+      IdentityManager.registerOAuthInfos([info]);
+
+      // Handle user sign-in
+      IdentityManager.checkSignInStatus(esriConfig.portalUrl + "/sharing")
+        .then(() => {
+          console.log("User is already signed in.");
+        })
+        .catch(() => {
+          console.log("Prompting user to sign in...");
+          IdentityManager.getCredential(esriConfig.portalUrl + "/sharing");
+        });
+    </script>
+  </body>
+</html>
