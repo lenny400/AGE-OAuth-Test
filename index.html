@@ -1,66 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>ArcGIS Print Demo (OAuth Enabled)</title>
-    <link rel="stylesheet" href="https://js.arcgis.com/4.34/esri/themes/dark/main.css" />
+<head>
+  <meta charset="utf-8">
+  <title>ArcGIS Print Demo with OAuth</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.34/esri/themes/dark/main.css"/>
 
-    <!-- ArcGIS Web Components -->
-    <script type="module" src="https://js.arcgis.com/calcite-components/3.3.3/calcite.esm.js"></script>
-    <script src="https://js.arcgis.com/4.34/"></script>
-    <script type="module" src="https://js.arcgis.com/4.34/map-components/"></script>
+  <!-- ArcGIS JS SDK -->
+  <script src="https://js.arcgis.com/4.34/"></script>
 
-    <style>
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-      arcgis-map {
-        height: 100%;
-        width: 100%;
-      }
-    </style>
-  </head>
+  <!-- Calcite Components (optional if using web components) -->
+  <script type="module" src="https://js.arcgis.com/calcite-components/3.3.3/calcite.esm.js"></script>
 
-  <body>
-    <arcgis-map item-id="dbb34e023cd94d3da5734c8102b5a1c4">
-      <arcgis-print
-        slot="bottom-right"
-        allowed-formats="all"
-        allowed-layouts="all"
-      ></arcgis-print>
-    </arcgis-map>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    #viewDiv {
+      height: 100%;
+      width: 100%;
+    }
+    arcgis-print {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="viewDiv"></div>
 
-    <!-- Authentication Setup -->
-    <script type="module">
-      import OAuthInfo from "https://js.arcgis.com/4.34/@arcgis/core/identity/OAuthInfo.js";
-      import IdentityManager from "https://js.arcgis.com/4.34/@arcgis/core/identity/IdentityManager.js";
-      import esriConfig from "https://js.arcgis.com/4.34/@arcgis/core/config.js";
+  <script>
+    require([
+      "esri/config",
+      "esri/identity/OAuthInfo",
+      "esri/identity/IdentityManager",
+      "esri/WebMap",
+      "esri/views/MapView",
+      "esri/widgets/Print"
+    ], (esriConfig, OAuthInfo, IdentityManager, WebMap, MapView, Print) => {
 
-      // Set your Enterprise Portal URL
+      // Configure your portal URL
       esriConfig.portalUrl = "https://staffmaps.cityoftacoma.org/portal";
 
-      // Configure OAuth
+      // OAuth configuration
       const info = new OAuthInfo({
-        appId: "885YlBvaWOdQyc4o", // <-- client ID here
+        appId: "885YlBvaWOdQyc4o", // <-- replace with your client ID
         portalUrl: esriConfig.portalUrl,
-        popup: true, // popup avoids full-page redirect
+        popup: false,
         redirectUri: "https://lenny400.github.io/AGE-OAuth-Test/"
       });
-
       IdentityManager.registerOAuthInfos([info]);
 
-      // Handle user sign-in
-      IdentityManager.checkSignInStatus(esriConfig.portalUrl + "/sharing")
+      // Check if user is signed in; if not, prompt login
+      IdentityManager.checkSignInStatus(info.portalUrl + "/sharing")
+        .catch(() => IdentityManager.getCredential(info.portalUrl + "/sharing"))
         .then(() => {
-          console.log("User is already signed in.");
+          console.log("User signed in successfully");
+
+          // Load the WebMap
+          const webmap = new WebMap({
+            portalItem: { id: "7bd85d1119b44bceb8dc9525ad55e61a" } // your web map ID
+          });
+
+          const view = new MapView({
+            container: "viewDiv",
+            map: webmap
+          });
+
+          // Add Print widget
+          const print = new Print({
+            view: view,
+            allowedFormats: ["all"],
+            allowedLayouts: ["all"]
+          });
+          view.ui.add(print, "bottom-right");
         })
-        .catch(() => {
-          console.log("Prompting user to sign in...");
-          IdentityManager.getCredential(esriConfig.portalUrl + "/sharing");
+        .catch((err) => {
+          console.error("Failed to sign in:", err);
         });
-    </script>
-  </body>
+    });
+  </script>
+</body>
 </html>
