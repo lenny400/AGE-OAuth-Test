@@ -13,7 +13,7 @@
       margin: 0;
       padding: 0;
     }
-    arcgis-map {
+    #mapContainer {
       height: 100%;
       width: 100%;
     }
@@ -21,14 +21,7 @@
 </head>
 
 <body>
-  <!-- ArcGIS Web Component Map -->
-  <arcgis-map item-id="fc013bb4eafa40e7a62be25b92a34135">
-    <arcgis-print
-      slot="bottom-right"
-      allowed-formats="all"
-      allowed-layouts="all">
-    </arcgis-print>
-  </arcgis-map>
+  <div id="mapContainer"></div>
 
   <script>
     require([
@@ -37,23 +30,34 @@
       "esri/identity/IdentityManager"
     ], (esriConfig, OAuthInfo, IdentityManager) => {
 
-      // Configure your portal URL
       esriConfig.portalUrl = "https://staffmaps.cityoftacoma.org/portal";
 
-      // OAuth configuration
       const info = new OAuthInfo({
-        appId: "885YlBvaWOdQyc4o", // replace with your client ID
+        appId: "YOUR_CLIENT_ID", // replace with your client ID
         portalUrl: esriConfig.portalUrl,
         popup: false,
         redirectUri: "https://lenny400.github.io/AGE-OAuth-Test/"
       });
       IdentityManager.registerOAuthInfos([info]);
 
-      // Prompt login if user is not signed in
       IdentityManager.checkSignInStatus(info.portalUrl + "/sharing")
         .catch(() => IdentityManager.getCredential(info.portalUrl + "/sharing"))
         .then(() => {
           console.log("User signed in successfully");
+
+          // Create the arcgis-map web component dynamically
+          const mapContainer = document.getElementById("mapContainer");
+          const arcgisMap = document.createElement("arcgis-map");
+          arcgisMap.setAttribute("item-id", "7bd85d1119b44bceb8dc9525ad55e61a");
+
+          // Create the print widget inside the map
+          const print = document.createElement("arcgis-print");
+          print.setAttribute("slot", "bottom-right");
+          print.setAttribute("allowed-formats", "all");
+          print.setAttribute("allowed-layouts", "all");
+
+          arcgisMap.appendChild(print);
+          mapContainer.appendChild(arcgisMap);
         })
         .catch(err => console.error("Failed to sign in:", err));
     });
