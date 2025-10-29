@@ -6,13 +6,16 @@
     <script src="https://js.arcgis.com/4.34/"></script>
     <script>
       require(["esri/identity/IdentityManager"], (IdentityManager) => {
-        // Complete the OAuth flow
-        IdentityManager.completeOAuth2();
-
-        // After a short delay, redirect to the main app page
-        setTimeout(() => {
-          window.location.href = "https://lenny400.github.io/AGE-OAuth-Test/";
-        }, 1000);
+        IdentityManager.completeOAuth2()
+          .then(() => {
+            console.log("OAuth sign-in completed successfully.");
+            // Redirect to your app after successful completion
+            window.location.replace("https://lenny400.github.io/AGE-OAuth-Test/");
+          })
+          .catch((err) => {
+            console.error("OAuth sign-in failed:", err);
+            document.body.innerHTML = "<p>Sign-in failed. Check console for details.</p>";
+          });
       });
     </script>
   </head>
