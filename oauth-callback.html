@@ -5,11 +5,14 @@
     <title>OAuth Callback</title>
     <script src="https://js.arcgis.com/4.34/"></script>
     <script>
-      require(["esri/identity/OAuthInfo", "esri/identity/IdentityManager"], (
-        OAuthInfo,
-        IdentityManager
-      ) => {
+      require(["esri/identity/IdentityManager"], (IdentityManager) => {
+        // Complete the OAuth flow
         IdentityManager.completeOAuth2();
+
+        // After a short delay, redirect to the main app page
+        setTimeout(() => {
+          window.location.href = "https://lenny400.github.io/AGE-OAuth-Test/";
+        }, 1000);
       });
     </script>
   </head>
