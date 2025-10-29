@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>ArcGIS Print Demo with OAuth (Web Components)</title>
+  <meta charset="utf-8">
+  <title>ArcGIS Print Demo with OAuth</title>
   <link rel="stylesheet" href="https://js.arcgis.com/4.34/esri/themes/dark/main.css"/>
-  <script type="module" src="https://js.arcgis.com/calcite-components/3.3.3/calcite.esm.js"></script>
+
+  <!-- ArcGIS JS SDK -->
   <script src="https://js.arcgis.com/4.34/"></script>
+
+  <!-- Calcite Components (optional if using web components) -->
+  <script type="module" src="https://js.arcgis.com/calcite-components/3.3.3/calcite.esm.js"></script>
 
   <style>
     html, body {
@@ -13,55 +17,70 @@
       margin: 0;
       padding: 0;
     }
-    #mapContainer {
+    #viewDiv {
       height: 100%;
       width: 100%;
     }
+    arcgis-print {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+    }
   </style>
 </head>
-
 <body>
-  <div id="mapContainer"></div>
+  <div id="viewDiv"></div>
 
   <script>
     require([
       "esri/config",
       "esri/identity/OAuthInfo",
-      "esri/identity/IdentityManager"
-    ], (esriConfig, OAuthInfo, IdentityManager) => {
+      "esri/identity/IdentityManager",
+      "esri/WebMap",
+      "esri/views/MapView",
+      "esri/widgets/Print"
+    ], (esriConfig, OAuthInfo, IdentityManager, WebMap, MapView, Print) => {
 
+      // Configure your portal URL
       esriConfig.portalUrl = "https://staffmaps.cityoftacoma.org/portal";
 
+      // OAuth configuration
       const info = new OAuthInfo({
-        appId: "885YlBvaWOdQyc4o", // replace with your client ID
+        appId: "885YlBvaWOdQyc4o", // <-- replace with your client ID
         portalUrl: esriConfig.portalUrl,
         popup: false,
         redirectUri: "https://lenny400.github.io/AGE-OAuth-Test/"
       });
       IdentityManager.registerOAuthInfos([info]);
 
+      // Check if user is signed in; if not, prompt login
       IdentityManager.checkSignInStatus(info.portalUrl + "/sharing")
         .catch(() => IdentityManager.getCredential(info.portalUrl + "/sharing"))
         .then(() => {
           console.log("User signed in successfully");
 
-          // Create the arcgis-map web component dynamically
-          const mapContainer = document.getElementById("mapContainer");
-          const arcgisMap = document.createElement("arcgis-map");
-          arcgisMap.setAttribute("item-id", "fc013bb4eafa40e7a62be25b92a34135");
+          // Load the WebMap
+          const webmap = new WebMap({
+            portalItem: { id: "fc013bb4eafa40e7a62be25b92a34135" } // your web map ID
+          });
 
-          // Create the print widget inside the map
-          const print = document.createElement("arcgis-print");
-          print.setAttribute("slot", "bottom-right");
-          print.setAttribute("allowed-formats", "all");
-          print.setAttribute("allowed-layouts", "all");
+          const view = new MapView({
+            container: "viewDiv",
+            map: webmap
+          });
 
-          arcgisMap.appendChild(print);
-          mapContainer.appendChild(arcgisMap);
+          // Add Print widget
+          const print = new Print({
+            view: view,
+            allowedFormats: ["all"],
+            allowedLayouts: ["all"]
+          });
+          view.ui.add(print, "bottom-right");
         })
-        .catch(err => console.error("Failed to sign in:", err));
+        .catch((err) => {
+          console.error("Failed to sign in:", err);
+        });
     });
   </script>
 </body>
 </html>
-
