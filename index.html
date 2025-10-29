@@ -46,7 +46,8 @@
       const info = new OAuthInfo({
         appId: "885YlBvaWOdQyc4o", // <-- client ID here
         portalUrl: esriConfig.portalUrl,
-        popup: true // popup avoids full-page redirect
+        popup: true, // popup avoids full-page redirect
+        redirectUri: "https://lenny400.github.io/AGE-OAuth-Test/"
       });
 
       IdentityManager.registerOAuthInfos([info]);
@@ -63,4 +64,3 @@
     </script>
   </body>
 </html>
-
